@@ -2270,7 +2270,7 @@ else
             call neomake#utils#DebugMessage(printf('output [%s]: job %d not found.', a:event_type, a:job_id))
             return
         endif
-        let args = [jobinfo, copy(a:data), a:event_type]
+        let args = [jobinfo, copy(a:data), a:event_type, 1]
         call add(s:nvim_output_handler_queue, args)
         if !exists('jobinfo._nvim_in_handler')
             let jobinfo._nvim_in_handler = 1
