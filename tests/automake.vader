@@ -238,9 +238,7 @@ Execute (Automake):
   doautocmd FileType
   AssertNeomakeMessage 'automake: configured buffer for ft=neomake_tests (true (global)).', 3
   doautocmd InsertLeave
-  if has('timers')
-    sleep 20m
-  endif
+  NeomakeTestsWaitForMessage 'automake: buffer was not changed.', 3
   AssertEqual len(g:neomake_test_jobfinished), 1
 
   normal! ifoo
@@ -249,7 +247,8 @@ Execute (Automake):
 
   " Should not run without changes to the buffer.
   exe 'doautocmd' event
-  sleep 50m
+  NeomakeTestsWaitForMessage 'automake: handling event TextChanged.', 3
+  AssertNeomakeMessage 'automake: buffer was not changed.'
   AssertEqual len(g:neomake_test_jobfinished), 2
 
   " Should run with changes to the buffer.
@@ -324,9 +323,10 @@ Execute (Automake: skips non-default buftypes):
 
   if exists('##TextChanged')
     doautocmd TextChanged
-    sleep 50m
+    NeomakeTestsWaitForMessage 'automake: ignoring TextChanged for buftype=nofile.', 3
   else
     doautocmd CursorHold
+    AssertNeomakeMessage 'automake: ignoring TextChanged for buftype=nofile.', 3
   endif
   AssertEqual len(g:neomake_test_jobfinished), 0
   bwipe!
@@ -566,8 +566,7 @@ Execute (BufWritePost does not run for unchanged buffer (delayed)):
     set filetype=neomake_tests
     exe 'w' tempname()
     AssertNeomakeMessage '\vautomake: started timer \(5ms\): (\d+)'
-    sleep 10m
-    NeomakeTestsWaitForFinishedJobs
+    NeomakeTestsWaitForNextFinishedJob
     AssertEqual len(g:neomake_test_jobfinished), 1
 
     w
@@ -577,8 +576,7 @@ Execute (BufWritePost does not run for unchanged buffer (delayed)):
 
     normal! ifoo
     w
-    sleep 10m
-    NeomakeTestsWaitForFinishedJobs
+    NeomakeTestsWaitForNextFinishedJob
     AssertEqual len(g:neomake_test_jobfinished), 2
 
     w
@@ -589,7 +587,6 @@ Execute (BufWritePost does not run for unchanged buffer (delayed)):
     NeomakeTestsWaitForFinishedJobs
     AssertEqual len(g:neomake_test_jobfinished), 2
     AssertNeomakeMessage 'automake: buffer was not changed.'
-
     bwipe
   endif
 
@@ -660,10 +657,9 @@ Execute (Automake restarts if context changed):
     doautocmd CursorHold
     AssertNeomakeMessage '\vautomake: started timer \(5ms\): (\d+)'
     norm! ^
-    sleep 10m
-    AssertNeomakeMessage "automake: context/position changed: [[0, 1, 11, 0], 'n'] => [[0, 1, 1, 0], 'n'].", 3
+    NeomakeTestsWaitForMessage "automake: context/position changed: [[0, 1, 11, 0], 'n'] => [[0, 1, 1, 0], 'n'].", 3
     AssertNeomakeMessage '\vautomake: started timer \(5ms\): (\d+)'
-    NeomakeTestsWaitForFinishedJobs
+    NeomakeCancelJobs!
     bwipe!
   endif
 
@@ -722,9 +718,7 @@ Execute (Timer callback ignores wiped buffer):
     AssertNeomakeMessage '\vautomake: started timer \(5ms\): (\d+)'
     let timer = g:neomake_test_matchlist[1]
     bwipe
-    sleep 10m
     AssertNeomakeMessage 'automake: automake: cleaning timer for wiped buffer: '.timer.'.'
-    NeomakeTestsWaitForFinishedJobs
   endif
 
 Execute (Timer callback ignores wiped buffer with noautocmd):
@@ -739,8 +733,7 @@ Execute (Timer callback ignores wiped buffer with noautocmd):
     AssertNeomakeMessage '\vautomake: started timer \(5ms\): (\d+)'
     let timer = g:neomake_test_matchlist[1]
     noautocmd bwipe
-    sleep 10m
-    AssertNeomakeMessage 'automake: buffer does not exist anymore for timer '.timer.'.'
+    NeomakeTestsWaitForMessage 'automake: buffer does not exist anymore for timer '.timer.'.'
   endif
 
 Execute (Toggling disables automaking):
@@ -770,11 +763,10 @@ Execute (Handles timeout in another buffer):
     let timer = g:neomake_test_matchlist[1]
     new
     let bufnr2 = bufnr('%')
-    sleep 20m
-    AssertNeomakeMessage printf('automake: callback for timer %d (via TextChanged).', timer)
+    NeomakeTestsWaitForMessage printf('automake: callback for timer %d (via TextChanged).', timer)
     AssertNeomakeMessage printf('automake: buffer changed: %d => %d.', bufnr1, bufnr2)
     bwipe
-    sleep 20m
+    NeomakeTestsWaitForFinishedJobs
     AssertEqual len(g:neomake_test_finished), 0
     bwipe!
   endif
