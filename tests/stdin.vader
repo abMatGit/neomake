@@ -15,6 +15,7 @@ Execute (stdin maker):
   endif
   AssertNeomakeMessage 'cwd: .', 3
   AssertNeomakeMessage '\mstdout: unnamed_maker: [''file1.test:line1.*'
+  AssertNeomakeMessage '\vUsed bufnr from stdin buffer \d+ \(file1.test\) for 2 entries: 1, 2.'
   AssertEqual map(getloclist(0), 'v:val.text'), ['line1', 'line2']
   bwipe!
 
