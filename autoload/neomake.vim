@@ -1584,7 +1584,7 @@ function! s:do_clean_make_info(make_info) abort
     if !empty(wipe_unlisted_buffers)
         call neomake#utils#DebugMessage(printf('Wiping out %d unlisted/remapped buffers: %s.',
                     \ len(wipe_unlisted_buffers),
-                    \ str(wipe_unlisted_buffers)))
+                    \ string(wipe_unlisted_buffers)))
         exe (&report < 2 ? 'silent ' : '').'bwipeout '.join(wipe_unlisted_buffers)
     endif
 
