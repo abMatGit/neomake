@@ -238,7 +238,9 @@ Execute (Automake):
   doautocmd FileType
   AssertNeomakeMessage 'automake: configured buffer for ft=neomake_tests (true (global)).', 3
   doautocmd InsertLeave
-  NeomakeTestsWaitForMessage 'automake: buffer was not changed.', 3
+  if has('timers')
+    NeomakeTestsWaitForMessage 'automake: buffer was not changed.', 3
+  endif
   AssertEqual len(g:neomake_test_jobfinished), 1
 
   normal! ifoo
@@ -247,7 +249,7 @@ Execute (Automake):
 
   " Should not run without changes to the buffer.
   exe 'doautocmd' event
-  NeomakeTestsWaitForMessage 'automake: handling event TextChanged.', 3
+  NeomakeTestsWaitForMessage 'automake: handling event '.event.'.', 3
   AssertNeomakeMessage 'automake: buffer was not changed.'
   AssertEqual len(g:neomake_test_jobfinished), 2
 
@@ -323,11 +325,10 @@ Execute (Automake: skips non-default buftypes):
 
   if exists('##TextChanged')
     doautocmd TextChanged
-    NeomakeTestsWaitForMessage 'automake: ignoring TextChanged for buftype=nofile.', 3
   else
     doautocmd CursorHold
-    AssertNeomakeMessage 'automake: ignoring TextChanged for buftype=nofile.', 3
   endif
+  NeomakeTestsWaitForMessage 'automake: ignoring '.event.' for buftype=nofile.', 3
   AssertEqual len(g:neomake_test_jobfinished), 0
   bwipe!
 
