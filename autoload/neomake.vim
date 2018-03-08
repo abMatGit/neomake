@@ -1561,7 +1561,7 @@ function! s:do_clean_make_info(make_info) abort
     endif
 
     " Clean up temporary files and buffers.
-    let wipe_unlisted_buffers = get(a:make_info, '_wipe_unlisted_buffers')
+    let wipe_unlisted_buffers = get(a:make_info, '_wipe_unlisted_buffers', [])
     let tempfiles = get(a:make_info, 'tempfiles')
     if !empty(tempfiles)
         for tempfile in tempfiles
@@ -1582,6 +1582,9 @@ function! s:do_clean_make_info(make_info) abort
         endif
     endif
     if !empty(wipe_unlisted_buffers)
+        if !empty(wipe_unlisted_buffers)
+            call neomake#compat#uniq(sort(wipe_unlisted_buffers))
+        endif
         call neomake#utils#DebugMessage(printf('Wiping out %d unlisted/remapped buffers: %s.',
                     \ len(wipe_unlisted_buffers),
                     \ string(wipe_unlisted_buffers)))
